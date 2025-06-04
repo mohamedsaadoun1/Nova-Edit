@@ -1,0 +1,84 @@
+{
+  "expo": {
+    "name": "Nova Edit Mobile",
+    "slug": "nova-edit-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "nova-edit",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a1a1a"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.novaedit.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs access to camera to record videos",
+        "NSMicrophoneUsageDescription": "This app needs access to microphone to record audio",
+        "NSPhotoLibraryUsageDescription": "This app needs access to photo library to import videos and images"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#1a1a1a"
+      },
+      "package": "com.novaedit.mobile",
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "INTERNET",
+        "READ_MEDIA_VIDEO",
+        "READ_MEDIA_AUDIO",
+        "READ_MEDIA_IMAGES"
+      ],
+      "allowBackup": false
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow Nova Edit to access your microphone to record audio for videos."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Nova Edit to access your photos to import videos and images.",
+          "savePhotosPermission": "Allow Nova Edit to save edited videos to your photo library.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Nova Edit to access your photos to import images and videos.",
+          "cameraPermission": "Allow Nova Edit to access your camera to take photos and videos."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Nova Edit to access your camera to record videos.",
+          "microphonePermission": "Allow Nova Edit to access your microphone to record audio."
+        }
+      ],
+      "expo-sharing"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
