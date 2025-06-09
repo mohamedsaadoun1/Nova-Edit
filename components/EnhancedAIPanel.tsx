@@ -221,19 +221,19 @@ export default function EnhancedAIPanel() {
       switch (recommendation.type) {
         case 'music':
           // Add music to timeline
-          console.log('Adding music:', recommendation.content?.title);
+          // console.log('Adding music:', recommendation.content?.title); // Removed for production
           break;
         case 'template':
           // Apply video template
-          console.log('Applying template:', recommendation.content?.title);
+          // console.log('Applying template:', recommendation.content?.title); // Removed for production
           break;
         case 'effect':
           // Apply visual effect
-          console.log('Applying effect:', recommendation.suggestion);
+          // console.log('Applying effect:', recommendation.suggestion); // Removed for production
           break;
         case 'color':
           // Apply color grading
-          console.log('Applying color grading:', recommendation.suggestion);
+          // console.log('Applying color grading:', recommendation.suggestion); // Removed for production
           break;
       }
       
@@ -262,7 +262,7 @@ export default function EnhancedAIPanel() {
       
       // Start real-time processing with selected effects
       // This would integrate with camera/video input
-      console.log('Starting real-time processing with effects:', selectedEffects);
+      // console.log('Starting real-time processing with effects:', selectedEffects); // Removed for production
       
     } catch (error) {
       console.error('Failed to start real-time processing:', error);

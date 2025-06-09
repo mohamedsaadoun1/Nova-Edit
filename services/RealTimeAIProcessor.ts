@@ -153,7 +153,7 @@ export class RealTimeAIProcessor {
     if (this.isInitialized) return;
 
     try {
-      console.log('🚀 Initializing Real-Time AI Processor...');
+      // console.log('🚀 Initializing Real-Time AI Processor...'); // Removed for production
       
       // Update configuration
       if (config) {
@@ -186,8 +186,8 @@ export class RealTimeAIProcessor {
       this.startPerformanceMonitoring();
       
       this.isInitialized = true;
-      console.log('✅ Real-Time AI Processor initialized successfully');
-      console.log(`🎯 Target: ${this.config.targetFPS} FPS, Max latency: ${this.config.maxLatency}ms`);
+      // console.log('✅ Real-Time AI Processor initialized successfully'); // Removed for production
+      // console.log(`🎯 Target: ${this.config.targetFPS} FPS, Max latency: ${this.config.maxLatency}ms`); // Removed for production
       
     } catch (error) {
       console.error('❌ Failed to initialize Real-Time AI Processor:', error);
@@ -219,7 +219,7 @@ export class RealTimeAIProcessor {
       // Check if frame should be dropped due to performance
       if (processingTime > this.config.maxLatency && this.config.adaptiveQuality) {
         this.metrics.droppedFrames++;
-        console.warn(`⚠️ Frame dropped due to high latency: ${processingTime.toFixed(2)}ms`);
+        // console.warn(`⚠️ Frame dropped due to high latency: ${processingTime.toFixed(2)}ms`); // Keep for debugging performance issues
       }
       
       const result: ProcessedFrame = {
@@ -282,13 +282,13 @@ export class RealTimeAIProcessor {
     enabledEffects: string[] = []
   ): Promise<void> {
     if (this.isProcessing) {
-      console.warn('⚠️ Processing stream already active');
+      // console.warn('⚠️ Processing stream already active'); // Keep for debugging multiple calls
       return;
     }
 
     try {
       this.isProcessing = true;
-      console.log('🎬 Starting real-time processing stream...');
+      // console.log('🎬 Starting real-time processing stream...'); // Removed for production
       
       // Setup video processing
       const videoTrack = videoStream.getVideoTracks()[0];
@@ -318,7 +318,7 @@ export class RealTimeAIProcessor {
     this.audioBuffer.length = 0;
     this.processingQueue.length = 0;
     
-    console.log('⏹️ Real-time processing stream stopped');
+    // console.log('⏹️ Real-time processing stream stopped'); // Removed for production
   }
 
   /**
@@ -328,7 +328,7 @@ export class RealTimeAIProcessor {
     const pipelineMap = type === 'video' ? this.videoPipelines : this.audioPipelines;
     pipelineMap.set(pipeline.id, pipeline);
     
-    console.log(`➕ Added custom ${type} pipeline: ${pipeline.name}`);
+    // console.log(`➕ Added custom ${type} pipeline: ${pipeline.name}`); // Removed for production
   }
 
   /**
@@ -341,7 +341,7 @@ export class RealTimeAIProcessor {
       this.activePipelines.delete(pipelineId);
     }
     
-    console.log(`🔧 Pipeline ${pipelineId} ${enabled ? 'enabled' : 'disabled'}`);
+    // console.log(`🔧 Pipeline ${pipelineId} ${enabled ? 'enabled' : 'disabled'}`); // Removed for production
   }
 
   /**
@@ -360,7 +360,7 @@ export class RealTimeAIProcessor {
       this.adjustProcessingQuality(newConfig.quality);
     }
     
-    console.log('🔧 Real-time processor configuration updated:', newConfig);
+    // console.log('🔧 Real-time processor configuration updated:', newConfig); // Removed for production
   }
 
   /**
@@ -397,7 +397,7 @@ export class RealTimeAIProcessor {
     tf.env().set('WEBGL_FORCE_F16_TEXTURES', this.config.quality === 'low');
     tf.env().set('WEBGL_PACK', true);
     
-    console.log(`🔧 TensorFlow backend: ${tf.getBackend()}`);
+    // console.log(`🔧 TensorFlow backend: ${tf.getBackend()}`); // Removed for production
   }
 
   private async initializeWebGL(): Promise<void> {
@@ -408,14 +408,14 @@ export class RealTimeAIProcessor {
       console.warn('⚠️ WebGL not available, falling back to CPU processing');
       this.config.enableGPU = false;
     } else {
-      console.log('✅ WebGL context initialized for GPU processing');
+      // console.log('✅ WebGL context initialized for GPU processing'); // Removed for production
     }
   }
 
   private async initializeAudioContext(): Promise<void> {
     try {
       this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      console.log('🔊 Audio context initialized');
+      // console.log('🔊 Audio context initialized'); // Removed for production
     } catch (error) {
       console.warn('⚠️ Audio context initialization failed:', error);
     }
@@ -431,7 +431,7 @@ export class RealTimeAIProcessor {
           const model = await this.loadModel(config);
           if (model) {
             this.models.set(modelName, model);
-            console.log(`✅ Loaded ${modelName} model`);
+            // console.log(`✅ Loaded ${modelName} model`); // Removed for production
           }
         } catch (error) {
           console.warn(`⚠️ Failed to load ${modelName} model:`, error);
@@ -546,7 +546,7 @@ export class RealTimeAIProcessor {
       try {
         // In a real implementation, create actual web workers
         // For now, just log the initialization
-        console.log(`👷 Worker ${i + 1} initialized`);
+        // console.log(`👷 Worker ${i + 1} initialized`); // Removed for production
       } catch (error) {
         console.warn(`Failed to create worker ${i + 1}:`, error);
       }
@@ -599,7 +599,7 @@ export class RealTimeAIProcessor {
       const currentIndex = qualityLevels.indexOf(this.config.quality);
       if (currentIndex > 0) {
         this.config.quality = qualityLevels[currentIndex - 1] as any;
-        console.log(`📉 Reduced quality to ${this.config.quality} due to high latency`);
+        // console.log(`📉 Reduced quality to ${this.config.quality} due to high latency`); // Keep for debugging performance issues
       }
     } else if (currentLatency < targetLatency * 0.7 && this.config.quality !== 'ultra') {
       // Increase quality if performance allows
@@ -607,7 +607,7 @@ export class RealTimeAIProcessor {
       const currentIndex = qualityLevels.indexOf(this.config.quality);
       if (currentIndex < qualityLevels.length - 1) {
         this.config.quality = qualityLevels[currentIndex + 1] as any;
-        console.log(`📈 Increased quality to ${this.config.quality} due to good performance`);
+        // console.log(`📈 Increased quality to ${this.config.quality} due to good performance`); // Keep for debugging performance issues
       }
     }
   }
@@ -693,14 +693,14 @@ export class RealTimeAIProcessor {
   ): Promise<void> {
     // Implementation would capture frames from video track and process them
     // This is a simplified version
-    console.log('🎥 Video stream processing started');
+    // console.log('🎥 Video stream processing started'); // Removed for production
   }
 
   private async processAudioStream(
     audioTrack: MediaStreamTrack,
     enabledEffects: string[] = []
   ): Promise<void> {
-    console.log('🔊 Audio stream processing started');
+    // console.log('🔊 Audio stream processing started'); // Removed for production
   }
 
   private updateFrameMetrics(processingTime: number): void {
@@ -716,11 +716,11 @@ export class RealTimeAIProcessor {
   private adjustFrameRate(targetFPS: number): void {
     this.config.targetFPS = targetFPS;
     this.config.maxLatency = 1000 / targetFPS;
-    console.log(`🎯 Adjusted target frame rate to ${targetFPS} FPS`);
+    // console.log(`🎯 Adjusted target frame rate to ${targetFPS} FPS`); // Removed for production
   }
 
   private adjustProcessingQuality(quality: string): void {
-    console.log(`🎨 Processing quality adjusted to ${quality}`);
+    // console.log(`🎨 Processing quality adjusted to ${quality}`); // Removed for production
     // Reload models with appropriate quality settings
     this.loadOptimizedModels();
   }
@@ -764,7 +764,7 @@ export class RealTimeAIProcessor {
     this.models.forEach(model => model.dispose());
     this.models.clear();
     
-    console.log('🧹 Real-Time AI Processor cleanup completed');
+    // console.log('🧹 Real-Time AI Processor cleanup completed'); // Removed for production
   }
 }
 

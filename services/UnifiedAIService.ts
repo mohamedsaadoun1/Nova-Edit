@@ -110,7 +110,7 @@ export class UnifiedAIService {
    */
   async initialize(): Promise<void> {
     try {
-      console.log('Initializing Unified AI Service...');
+      // console.log('Initializing Unified AI Service...'); // Removed for production
       
       const initPromises: Promise<void>[] = [];
 
@@ -144,7 +144,7 @@ export class UnifiedAIService {
       await Promise.allSettled(initPromises);
       
       this.isInitialized = true;
-      console.log('Unified AI Service initialized successfully');
+      // console.log('Unified AI Service initialized successfully'); // Removed for production
     } catch (error) {
       console.error('Failed to initialize Unified AI Service:', error);
       throw error;

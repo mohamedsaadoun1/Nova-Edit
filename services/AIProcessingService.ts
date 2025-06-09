@@ -70,13 +70,13 @@ export class AIProcessingService {
     if (this.isInitialized) return;
 
     try {
-      console.log('Initializing AI models...');
+      // console.log('Initializing AI models...'); // Removed for production
 
       // تهيئة TensorFlow.js للـ React Native
       await tf.ready();
       
       // تحميل نموذج Body Segmentation
-      console.log('Loading Body Segmentation model...');
+      // console.log('Loading Body Segmentation model...'); // Removed for production
       this.bodySegmentationModel = await bodySegmentation.createSegmenter(
         bodySegmentation.SupportedModels.MediaPipeSelfieSegmentation,
         {
@@ -86,7 +86,7 @@ export class AIProcessingService {
       );
 
       // تحميل نموذج Face Landmarks
-      console.log('Loading Face Landmarks model...');
+      // console.log('Loading Face Landmarks model...'); // Removed for production
       this.faceLandmarksModel = await faceLandmarksDetection.createDetector(
         faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh,
         {
@@ -97,9 +97,9 @@ export class AIProcessingService {
       );
 
       this.isInitialized = true;
-      console.log('AI models initialized successfully');
+      // console.log('AI models initialized successfully'); // Removed for production
     } catch (error) {
-      console.error('Failed to initialize AI models:', error);
+      // console.error('Failed to initialize AI models:', error); // Error is re-thrown, logging can be handled by caller or a dedicated logger
       throw error;
     }
   }

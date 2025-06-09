@@ -81,12 +81,12 @@ export class VideoStabilization {
     if (this.isInitialized) return;
 
     try {
-      console.log('Initializing FFmpeg for video stabilization...');
+      // console.log('Initializing FFmpeg for video stabilization...'); // Removed for production
       
       // Load FFmpeg core
       const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/esm';
       this.ffmpeg.on('log', ({ message }) => {
-        console.log('FFmpeg:', message);
+        // console.log('FFmpeg:', message); // Keep for critical FFmpeg logs, or use a proper logger
       });
 
       await this.ffmpeg.load({
@@ -95,7 +95,7 @@ export class VideoStabilization {
       });
 
       this.isInitialized = true;
-      console.log('Video stabilization initialized successfully');
+      // console.log('Video stabilization initialized successfully'); // Removed for production
     } catch (error) {
       console.error('Failed to initialize video stabilization:', error);
       throw error;
@@ -125,7 +125,7 @@ export class VideoStabilization {
       const frameStability = this.calculateFrameStability(motionData);
       const recommendedSettings = this.generateRecommendedSettings(shakiness, motionData);
 
-      console.log(`Motion analysis completed in ${performance.now() - startTime}ms`);
+      // console.log(`Motion analysis completed in ${performance.now() - startTime}ms`); // Removed for production
 
       return {
         motionVectors: motionData,
@@ -220,7 +220,7 @@ export class VideoStabilization {
       return this.parseVidstabData(new TextDecoder().decode(motionData));
     } catch (error) {
       // Fallback to basic motion estimation
-      console.warn('Advanced motion detection failed, using basic estimation');
+      // console.warn('Advanced motion detection failed, using basic estimation'); // Removed for production
       return this.basicMotionEstimation(inputName);
     }
   }
@@ -232,7 +232,8 @@ export class VideoStabilization {
     inputName: string,
     outputName: string,
     options: StabilizationOptions,
-    motionData: MotionVector[]
+    motionData: MotionVector[] // motionData is passed but not directly used in the FFmpeg command string construction.
+                               // It's assumed that motion_data.txt (written by extractMotionVectors) is used by vidstabtransform.
   ): Promise<void> {
     const { stabilization, rollingShutter, motionBlur, advanced } = options;
 
@@ -242,22 +243,18 @@ export class VideoStabilization {
     // Primary stabilization
     if (stabilization.enabled) {
       if (advanced.optimizeForCamera === 'handheld') {
-        // High-frequency stabilization for handheld cameras
         filters.push(
           `vidstabtransform=input=motion_data.txt:smoothing=${stabilization.smoothing}:crop=black:invert=0:relative=1:zoom=${stabilization.zoomFactor}`
         );
       } else if (advanced.optimizeForCamera === 'drone') {
-        // Lower smoothing for drone footage
         filters.push(
           `vidstabtransform=input=motion_data.txt:smoothing=${Math.max(10, stabilization.smoothing * 0.7)}:crop=black:zoom=${stabilization.zoomFactor}`
         );
       } else if (advanced.optimizeForCamera === 'vehicle') {
-        // Stronger stabilization for vehicle footage
         filters.push(
           `vidstabtransform=input=motion_data.txt:smoothing=${Math.min(100, stabilization.smoothing * 1.3)}:crop=black:zoom=${stabilization.zoomFactor * 1.1}`
         );
       } else {
-        // Standard stabilization
         filters.push(
           `vidstabtransform=input=motion_data.txt:smoothing=${stabilization.smoothing}:crop=black:zoom=${stabilization.zoomFactor}`
         );

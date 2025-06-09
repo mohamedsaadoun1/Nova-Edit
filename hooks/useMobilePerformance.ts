@@ -4,16 +4,16 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Platform, DeviceInfo, InteractionManager } from 'react-native';
+import { Platform, DeviceInfo, InteractionManager } from 'react-native'; // DeviceInfo is not directly used, consider removing if not planned
 import { MobileConfigManager } from '../config/MobileConfig';
 
 interface PerformanceMetrics {
   fps: number;
-  memoryUsage: number;
-  cpuUsage: number;
-  batteryLevel: number;
+  memoryUsage: number; // MB
+  cpuUsage: number; // Percentage
+  batteryLevel: number; // 0-100
   isLowPowerMode: boolean;
-  networkType: string;
+  networkType: string; // e.g., 'wifi', 'cellular', 'none'
   deviceTier: 'low' | 'medium' | 'high';
 }
 
@@ -32,7 +32,7 @@ export function useMobilePerformance() {
       cpuUsage: 0,
       batteryLevel: 100,
       isLowPowerMode: false,
-      networkType: 'wifi',
+      networkType: 'unknown', // Default to unknown
       deviceTier: 'medium'
     },
     isOptimized: false,
@@ -40,43 +40,27 @@ export function useMobilePerformance() {
     warnings: []
   });
 
-  const mobileConfig = MobileConfigManager.getInstance();
+  const mobileConfig = useRef(MobileConfigManager.getInstance()).current; // Use ref for singleton instance
   const performanceTimer = useRef<NodeJS.Timeout | null>(null);
   const fpsCounter = useRef<{ frames: number; lastTime: number }>({ frames: 0, lastTime: Date.now() });
 
-  // كشف نوع الجهاز وقدراته
   const detectDeviceTier = useCallback(async (): Promise<'low' | 'medium' | 'high'> => {
     try {
-      // للأجهزة الحقيقية، يمكن استخدام DeviceInfo
-      // هنا نستخدم تقديرات أساسية
-      
       const platform = Platform.OS;
       const version = Platform.Version;
       
-      // تقدير بسيط لنوع الجهاز
       if (platform === 'android') {
-        // Android devices
-        if (typeof version === 'number' && version < 28) { // Android 9 or lower
-          return 'low';
-        } else if (typeof version === 'number' && version < 30) { // Android 10
-          return 'medium';
-        } else {
-          return 'high';
-        }
+        if (typeof version === 'number' && version < 28) return 'low';
+        if (typeof version === 'number' && version < 30) return 'medium';
+        return 'high';
       } else if (platform === 'ios') {
-        // iOS devices
         if (typeof version === 'string') {
           const iosVersion = parseFloat(version);
-          if (iosVersion < 13) {
-            return 'low';
-          } else if (iosVersion < 15) {
-            return 'medium';
-          } else {
-            return 'high';
-          }
+          if (iosVersion < 13) return 'low';
+          if (iosVersion < 15) return 'medium';
+          return 'high';
         }
       }
-      
       return 'medium';
     } catch (error) {
       console.warn('Could not detect device tier:', error);
@@ -84,7 +68,6 @@ export function useMobilePerformance() {
     }
   }, []);
 
-  // قياس FPS
   const measureFPS = useCallback(() => {
     const now = Date.now();
     fpsCounter.current.frames++;
@@ -96,45 +79,44 @@ export function useMobilePerformance() {
       
       setPerformanceState(prev => ({
         ...prev,
-        metrics: {
-          ...prev.metrics,
-          fps
-        }
+        metrics: { ...prev.metrics, fps }
       }));
       
-      // تحذير إذا كان FPS منخفضاً
-      if (fps < 30) {
+      if (fps < 30 && !prev.warnings.some(w => w.startsWith('FPS منخفض'))) { // Avoid duplicate warnings
         setPerformanceState(prev => ({
           ...prev,
-          warnings: [...prev.warnings.filter(w => !w.includes('FPS')), 'FPS منخفض: ' + fps]
+          warnings: [...prev.warnings, `FPS منخفض: ${fps}`]
+        }));
+      } else if (fps >= 30) {
+         setPerformanceState(prev => ({
+          ...prev,
+          warnings: prev.warnings.filter(w => !w.startsWith('FPS منخفض'))
         }));
       }
     }
-    
-    // جدولة القياس التالي
     requestAnimationFrame(measureFPS);
   }, []);
 
-  // مراقبة استخدام الذاكرة
   const monitorMemoryUsage = useCallback(() => {
     try {
-      // في تطبيق حقيقي، يمكن استخدام مكتبات مثل react-native-device-info
-      // هنا نستخدم تقدير أساسي
-      const estimatedMemory = Math.random() * 100; // MB
+      // This is a placeholder. Real memory usage monitoring in React Native is complex
+      // and often requires native modules or specific libraries.
+      const estimatedMemory = Math.random() * 100 + 50; // Simulated: 50-150MB
       
       setPerformanceState(prev => ({
         ...prev,
-        metrics: {
-          ...prev.metrics,
-          memoryUsage: estimatedMemory
-        }
+        metrics: { ...prev.metrics, memoryUsage: estimatedMemory }
       }));
       
-      // تحذير إذا كان استخدام الذاكرة مرتفعاً
-      if (estimatedMemory > 80) {
-        setPerformanceState(prev => ({
+      if (estimatedMemory > 120 && !prev.warnings.some(w => w.startsWith('استخدام الذاكرة مرتفع'))) { // Example threshold
+         setPerformanceState(prev => ({
           ...prev,
-          warnings: [...prev.warnings.filter(w => !w.includes('الذاكرة')), 'استخدام الذاكرة مرتفع: ' + estimatedMemory.toFixed(1) + 'MB']
+          warnings: [...prev.warnings, `استخدام الذاكرة مرتفع: ${estimatedMemory.toFixed(1)}MB`]
+        }));
+      } else if (estimatedMemory <= 120) {
+         setPerformanceState(prev => ({
+          ...prev,
+          warnings: prev.warnings.filter(w => !w.startsWith('استخدام الذاكرة مرتفع'))
         }));
       }
     } catch (error) {
@@ -142,119 +124,74 @@ export function useMobilePerformance() {
     }
   }, []);
 
-  // تطبيق تحسينات الأداء
   const applyPerformanceOptimizations = useCallback((deviceTier: 'low' | 'medium' | 'high') => {
     const optimizations: string[] = [];
-    const config = mobileConfig.getConfig();
+    const config = mobileConfig.getConfig(); // Get current config before updating
     
     if (deviceTier === 'low') {
-      // تحسينات للأجهزة الضعيفة
       mobileConfig.optimizeForLowEndDevice();
-      optimizations.push('تقليل جودة الفيديو');
-      optimizations.push('تقليل FPS لـ 30');
-      optimizations.push('تعطيل تسريع الهارد وير');
-      optimizations.push('تقليل حجم الكاش');
+      optimizations.push('تقليل جودة الفيديو الافتراضية');
+      optimizations.push('تعطيل بعض التأثيرات المكلفة');
     } else if (deviceTier === 'medium') {
-      // تحسينات للأجهزة المتوسطة
       mobileConfig.updateConfig({
         performance: {
-          ...config.performance,
-          memory: {
-            ...config.performance.memory,
-            maxVideoResolution: { width: 1920, height: 1080 },
-            maxConcurrentVideos: 2
-          },
-          rendering: {
-            ...config.performance.rendering,
-            maxFPS: 45
-          }
+          ...config.performance, // Spread existing performance config
+          memory: { ...config.performance.memory, maxVideoResolution: { width: 1920, height: 1080 } },
+          rendering: { ...config.performance.rendering, maxFPS: 45 }
         }
       });
-      optimizations.push('تحسين جودة متوسطة');
-      optimizations.push('تقليل المعالجة المتزامنة');
+      optimizations.push('تحسين جودة متوسطة وعالية الأداء');
     }
-    // للأجهزة القوية، نترك الإعدادات الافتراضية
     
     setPerformanceState(prev => ({
       ...prev,
-      isOptimized: true,
+      isOptimized: optimizations.length > 0,
       enabledOptimizations: optimizations
     }));
   }, [mobileConfig]);
 
-  // تفعيل وضع توفير البطارية
   const enablePowerSaving = useCallback(() => {
     mobileConfig.enablePowerSavingMode();
-    
     setPerformanceState(prev => ({
       ...prev,
-      enabledOptimizations: [
-        ...prev.enabledOptimizations,
-        'وضع توفير البطارية',
-        'تقليل FPS لـ 30',
-        'تقليل الرسوم المتحركة'
-      ]
+      enabledOptimizations: Array.from(new Set([...prev.enabledOptimizations, 'وضع توفير البطارية'])) // Ensure unique
     }));
   }, [mobileConfig]);
 
-  // تعطيل وضع توفير البطارية
   const disablePowerSaving = useCallback(() => {
     const config = mobileConfig.getConfig();
     mobileConfig.updateConfig({
       performance: {
         ...config.performance,
-        battery: {
-          ...config.performance.battery,
-          enablePowerSaving: false,
-          reduceCPUUsage: false
-        },
-        rendering: {
-          ...config.performance.rendering,
-          maxFPS: 60,
-          reducedMotion: false
-        }
+        battery: { ...config.performance.battery, enablePowerSaving: false, reduceCPUUsage: false },
+        rendering: { ...config.performance.rendering, maxFPS: 60, reducedMotion: false }
       }
     });
-    
     setPerformanceState(prev => ({
       ...prev,
-      enabledOptimizations: prev.enabledOptimizations.filter(opt => 
-        !opt.includes('توفير البطارية') && 
-        !opt.includes('تقليل FPS') && 
-        !opt.includes('تقليل الرسوم')
-      )
+      enabledOptimizations: prev.enabledOptimizations.filter(opt => opt !== 'وضع توفير البطارية')
     }));
   }, [mobileConfig]);
 
-  // تحسين تلقائي حسب الظروف
   const autoOptimize = useCallback(() => {
     const { metrics } = performanceState;
-    
-    if (metrics.fps < 30 || metrics.memoryUsage > 80 || metrics.isLowPowerMode) {
-      enablePowerSaving();
+    if (metrics.fps < 30 || metrics.memoryUsage > 120 || metrics.isLowPowerMode || metrics.batteryLevel < 20) {
+      if (!performanceState.enabledOptimizations.includes('وضع توفير البطارية')) {
+        enablePowerSaving();
+      }
       return true;
     }
-    
-    if (metrics.batteryLevel < 20) {
-      enablePowerSaving();
-      return true;
-    }
-    
     return false;
   }, [performanceState, enablePowerSaving]);
 
-  // تنظيف الذاكرة
   const cleanupMemory = useCallback(() => {
     try {
-      // تنظيف الكاش
-      // في تطبيق حقيقي، يمكن استخدام مكتبات تنظيف الذاكرة
-      console.log('تنظيف الذاكرة...');
-      
+      // console.log('تنظيف الذاكرة...'); // Removed for production
+      // Actual memory cleanup logic would be platform-specific or library-dependent
       setPerformanceState(prev => ({
         ...prev,
         warnings: prev.warnings.filter(w => !w.includes('الذاكرة'))
       }));
-      
       return true;
     } catch (error) {
       console.error('فشل في تنظيف الذاكرة:', error);
@@ -262,79 +199,55 @@ export function useMobilePerformance() {
     }
   }, []);
 
-  // بدء مراقبة الأداء
   const startPerformanceMonitoring = useCallback(() => {
-    // بدء قياس FPS
     requestAnimationFrame(measureFPS);
-    
-    // بدء مراقبة الذاكرة كل 5 ثوانٍ
-    performanceTimer.current = setInterval(() => {
-      monitorMemoryUsage();
-    }, 5000);
+    if (performanceTimer.current) clearInterval(performanceTimer.current); // Clear existing timer
+    performanceTimer.current = setInterval(monitorMemoryUsage, 5000);
   }, [measureFPS, monitorMemoryUsage]);
 
-  // إيقاف مراقبة الأداء
   const stopPerformanceMonitoring = useCallback(() => {
+    // To stop requestAnimationFrame, you'd typically use cancelAnimationFrame with the ID,
+    // but since measureFPS calls itself, we can just not start it again.
+    // For simplicity, we'll just clear the interval here.
     if (performanceTimer.current) {
       clearInterval(performanceTimer.current);
       performanceTimer.current = null;
     }
   }, []);
 
-  // تهيئة الـ hook
   useEffect(() => {
-    const initializePerformance = async () => {
-      // كشف نوع الجهاز
-      const deviceTier = await detectDeviceTier();
-      
-      setPerformanceState(prev => ({
-        ...prev,
-        metrics: {
-          ...prev.metrics,
-          deviceTier
-        }
-      }));
-      
-      // تطبيق التحسينات المناسبة
-      applyPerformanceOptimizations(deviceTier);
-      
-      // بدء المراقبة
+    const initialize = async () => {
+      const tier = await detectDeviceTier();
+      setPerformanceState(prev => ({ ...prev, metrics: { ...prev.metrics, deviceTier: tier } }));
+      applyPerformanceOptimizations(tier);
       startPerformanceMonitoring();
     };
     
-    // تأخير التهيئة لتجنب التأثير على بدء التطبيق
-    InteractionManager.runAfterInteractions(() => {
-      initializePerformance();
+    const task = InteractionManager.runAfterInteractions(() => {
+      initialize();
     });
     
-    return stopPerformanceMonitoring;
+    return () => {
+      stopPerformanceMonitoring();
+      if (task) task.cancel();
+    };
   }, [detectDeviceTier, applyPerformanceOptimizations, startPerformanceMonitoring, stopPerformanceMonitoring]);
 
-  // واجهة الـ hook
   return {
-    // بيانات الأداء
     ...performanceState,
-    
-    // وظائف التحكم
     enablePowerSaving,
     disablePowerSaving,
     autoOptimize,
     cleanupMemory,
-    
-    // وظائف المراقبة
     startPerformanceMonitoring,
     stopPerformanceMonitoring,
-    
-    // معلومات إضافية
     isLowEndDevice: performanceState.metrics.deviceTier === 'low',
     shouldOptimize: performanceState.metrics.fps < 45 || 
-                   performanceState.metrics.memoryUsage > 60 ||
+                   performanceState.metrics.memoryUsage > 100 || // Adjusted threshold
                    performanceState.metrics.isLowPowerMode,
-    
-    // تقرير الأداء
     getPerformanceReport: () => ({
       deviceTier: performanceState.metrics.deviceTier,
-      avgFPS: performanceState.metrics.fps,
+      avgFPS: performanceState.metrics.fps, // This is current FPS, not avg. Consider calculating avg.
       memoryUsage: performanceState.metrics.memoryUsage,
       optimizationsApplied: performanceState.enabledOptimizations.length,
       warnings: performanceState.warnings.length,

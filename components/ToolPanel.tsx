@@ -18,7 +18,7 @@ interface ToolPanelProps {
 interface ToolItem {
   id: Tool;
   name: string;
-  icon: string;
+  icon: keyof typeof Ionicons.glyphMap; // Correct type for Ionicons names
   color: string;
 }
 
@@ -91,7 +91,7 @@ export default function ToolPanel({ selectedTool, onToolSelect, disabled = false
               selectedTool === tool.id && { backgroundColor: tool.color }
             ]}>
               <Ionicons
-                name={tool.icon as any}
+                name={tool.icon} // Removed 'as any'
                 size={24}
                 color={selectedTool === tool.id ? '#fff' : (disabled ? '#666' : tool.color)}
               />

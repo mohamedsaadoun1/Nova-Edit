@@ -154,7 +154,7 @@ export class UnifiedLibraryIntegration {
     if (this.isInitialized) return;
 
     try {
-      console.log('Initializing Unified Library Integration...');
+      // console.log('Initializing Unified Library Integration...'); // Removed for production
 
       // تهيئة جميع المدراء
       await Promise.all([
@@ -164,7 +164,7 @@ export class UnifiedLibraryIntegration {
       ]);
 
       this.isInitialized = true;
-      console.log('Unified Library Integration initialized successfully');
+      // console.log('Unified Library Integration initialized successfully'); // Removed for production
     } catch (error) {
       console.error('Failed to initialize Unified Library Integration:', error);
       throw error;
@@ -441,7 +441,7 @@ export class UnifiedLibraryIntegration {
         this.assetsManager.clearCache()
       ]);
 
-      console.log('All caches cleared successfully');
+      // console.log('All caches cleared successfully'); // Removed for production
     } catch (error) {
       console.error('Failed to clear caches:', error);
       throw error;
@@ -481,7 +481,7 @@ export class UnifiedLibraryIntegration {
       await this.saveUserPreferences();
       await this.saveUsageHistory();
 
-      console.log('User data imported successfully');
+      // console.log('User data imported successfully'); // Removed for production
     } catch (error) {
       console.error('Failed to import user data:', error);
       throw error;
